@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sketch1", "Sketch1\Sketch1.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RfTransmit", "RfTransmit\RfTransmit.vcxproj", "{65B20603-A4E4-403E-A7A4-57F06BEFFD9E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WirelessAndManualSwitch", "WirelessAndManualSwitch\WirelessAndManualSwitch.vcxproj", "{E5347A63-EDB1-42BA-B9DA-E9DA1C050FCF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SwitchLedOnOff", "SwitchLedOnOff\SwitchLedOnOff.vcxproj", "{D55B7E54-96C1-4ED8-AE9A-FD5A63008C68}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Debounce", "Debounce\Debounce.vcxproj", "{8F44530B-B08D-45E7-A31F-08C51940F6A1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.ActiveCfg = Debug|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.Build.0 = Debug|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
+		{65B20603-A4E4-403E-A7A4-57F06BEFFD9E}.Debug|x86.ActiveCfg = Debug|Win32
+		{65B20603-A4E4-403E-A7A4-57F06BEFFD9E}.Debug|x86.Build.0 = Debug|Win32
+		{65B20603-A4E4-403E-A7A4-57F06BEFFD9E}.Release|x86.ActiveCfg = Release|Win32
+		{65B20603-A4E4-403E-A7A4-57F06BEFFD9E}.Release|x86.Build.0 = Release|Win32
+		{E5347A63-EDB1-42BA-B9DA-E9DA1C050FCF}.Debug|x86.ActiveCfg = Debug|Win32
+		{E5347A63-EDB1-42BA-B9DA-E9DA1C050FCF}.Debug|x86.Build.0 = Debug|Win32
+		{E5347A63-EDB1-42BA-B9DA-E9DA1C050FCF}.Release|x86.ActiveCfg = Release|Win32
+		{E5347A63-EDB1-42BA-B9DA-E9DA1C050FCF}.Release|x86.Build.0 = Release|Win32
+		{D55B7E54-96C1-4ED8-AE9A-FD5A63008C68}.Debug|x86.ActiveCfg = Debug|Win32
+		{D55B7E54-96C1-4ED8-AE9A-FD5A63008C68}.Debug|x86.Build.0 = Debug|Win32
+		{D55B7E54-96C1-4ED8-AE9A-FD5A63008C68}.Release|x86.ActiveCfg = Release|Win32
+		{D55B7E54-96C1-4ED8-AE9A-FD5A63008C68}.Release|x86.Build.0 = Release|Win32
+		{8F44530B-B08D-45E7-A31F-08C51940F6A1}.Debug|x86.ActiveCfg = Debug|Win32
+		{8F44530B-B08D-45E7-A31F-08C51940F6A1}.Debug|x86.Build.0 = Debug|Win32
+		{8F44530B-B08D-45E7-A31F-08C51940F6A1}.Release|x86.ActiveCfg = Release|Win32
+		{8F44530B-B08D-45E7-A31F-08C51940F6A1}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
