@@ -13,7 +13,7 @@
 
 
 #define LED_PIN 5
-int ledState = 0;
+int ledState = 1;
 
 // Instantiate a Bounce object
 Bounce debouncer1 = Bounce();	 
@@ -24,7 +24,7 @@ void setup() {
 	pinMode(BUTTON_PIN_1, INPUT);
 	// After setting up the button, setup the Bounce instance :
 	debouncer1.attach(BUTTON_PIN_1);
-	debouncer1.interval(220); // interval in ms		  
+	debouncer1.interval(300); // interval in ms		  
 
 	//Setup the LED :
 	pinMode(LED_PIN, OUTPUT);		
