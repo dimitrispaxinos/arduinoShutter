@@ -35,7 +35,7 @@ http://www.arduino.cc/en/Tutorial/Debounce
 const int buttonPin = 10;    // the number of the pushbutton pin
 const int ledPin = 5;      // the number of the LED pin
 
-							// Variables will change:
+						   // Variables will change:
 int ledState = HIGH;         // the current state of the output pin
 int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;   // the previous reading from the input pin
@@ -57,15 +57,13 @@ int reading = 0;
 void loop() {
 	// read the state of the switch into a local variable:
 	int reading = digitalRead(buttonPin);
-	ledState = debounce(buttonPin, ledPin, reading, buttonState, lastButtonState, lastDebounceTime, debounceDelay, ledState);
-	digitalWrite(ledPin, ledState);
+	debounce(buttonPin, ledPin, reading, buttonState, lastButtonState, lastDebounceTime, debounceDelay, ledState);
 	lastButtonState = reading;
 }
 
 
-int debounce(int btnpin, int lpin, int reading, int &btnState, int lastbtnState, unsigned long &lDTime, unsigned long delay, int lState)
-{
-
+void debounce(int btnpin, int lpin, int reading, int &btnState, int lastbtnState, unsigned long &lDTime, unsigned long delay, int &lState)
+{	
 	// check to see if you just pressed the button
 	// (i.e. the input went from LOW to HIGH),  and you've waited
 	// long enough since the last press to ignore any noise:
@@ -88,7 +86,7 @@ int debounce(int btnpin, int lpin, int reading, int &btnState, int lastbtnState,
 			if (btnState == HIGH) {
 				lState = !lState;
 			}
-			return lState;
-		}		
+		}
+		digitalWrite(lpin, lState);
 	}
 }
