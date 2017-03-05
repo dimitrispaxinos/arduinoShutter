@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SwitchLedOnOff", "SwitchLed
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Debounce", "Debounce\Debounce.vcxproj", "{8F44530B-B08D-45E7-A31F-08C51940F6A1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DebounceWithLibrary", "DebounceWithLibrary\DebounceWithLibrary.vcxproj", "{6D7DBA52-4BBF-4B19-AE37-924A44CD3019}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -39,6 +41,10 @@ Global
 		{8F44530B-B08D-45E7-A31F-08C51940F6A1}.Debug|x86.Build.0 = Debug|Win32
 		{8F44530B-B08D-45E7-A31F-08C51940F6A1}.Release|x86.ActiveCfg = Release|Win32
 		{8F44530B-B08D-45E7-A31F-08C51940F6A1}.Release|x86.Build.0 = Release|Win32
+		{6D7DBA52-4BBF-4B19-AE37-924A44CD3019}.Debug|x86.ActiveCfg = Debug|Win32
+		{6D7DBA52-4BBF-4B19-AE37-924A44CD3019}.Debug|x86.Build.0 = Debug|Win32
+		{6D7DBA52-4BBF-4B19-AE37-924A44CD3019}.Release|x86.ActiveCfg = Release|Win32
+		{6D7DBA52-4BBF-4B19-AE37-924A44CD3019}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
