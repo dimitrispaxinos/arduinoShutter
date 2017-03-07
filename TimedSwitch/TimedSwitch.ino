@@ -68,7 +68,7 @@ void loop() {
 		ledState = debounce(buttonPin, ledPin, reading, buttonState, lastButtonState, lastDebounceTime, debounceDelay, ledState);
 		digitalWrite(ledPin, ledState);
 	}
-	if (nextUpdateTime>0 && nextUpdateTime < millis())
+	if (nextUpdateTime > 0 && nextUpdateTime < millis())
 	{
 		nextUpdateTime = 0;
 		Serial.println("Back to zero");
@@ -83,13 +83,13 @@ void loop() {
 }
 
 
-int debounce(int btnpin, 
-			int lpin, 
-			int reading, 
-			int &btnState, 
-			int lastbtnState, 
-			unsigned long &lDTime, 
-			unsigned long delay, int lState)
+int debounce(int btnpin,
+	int lpin,
+	int reading,
+	int &btnState,
+	int lastbtnState,
+	unsigned long &lDTime,
+	unsigned long delay, int lState)
 {
 
 	// check to see if you just pressed the button
