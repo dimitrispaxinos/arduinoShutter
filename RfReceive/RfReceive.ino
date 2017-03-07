@@ -1,15 +1,25 @@
 /*
- Name:		RfReceive.ino
- Created:	3/4/2017 12:03:11 PM
- Author:	RevilS
+Example for receiving
+
+https://github.com/sui77/rc-switch/
+
+If you want to visualize a telegram copy the raw data and
+paste it into http://test.sui.li/oszi/
 */
 
-// the setup function runs once when you press reset or power the board
-void setup() {
+#include <RCSwitch.h>
 
+RCSwitch mySwitch = RCSwitch();
+
+void setup() {
+	Serial.begin(9600);
+	mySwitch.enableReceive(0);  // Receiver on interrupt 0 => that is pin #2
 }
 
-// the loop function runs over and over again until power down or reset
 void loop() {
-  
+	if (mySwitch.available()) {
+		Serial.println(mySwitch.getReceivedValue());
+		//output(mySwitch.getReceivedValue(), mySwitch.getReceivedBitlength(), mySwitch.getReceivedDelay(), mySwitch.getReceivedRawdata(), mySwitch.getReceivedProtocol());
+		mySwitch.resetAvailable();
+	}
 }

@@ -18,7 +18,7 @@
 19	}
 20	
 --&gt;21	void loop() {
-22		int buttonValue = digitalRead(BUTTON);
+22		/*int buttonValue = digitalRead(BUTTON);
 23		if (buttonValue == HIGH)
 24		{
 25			int currentStatus = digitalRead(LED_BUILTIN);

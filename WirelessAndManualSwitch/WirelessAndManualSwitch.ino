@@ -4,11 +4,11 @@
  Author:	RevilS
 */
 
-#include <RCSwitch.h>
+//#include <RCSwitch.h>
 
 const int BUTTON = 3;
 //const int RELAY1 = 3;
-RCSwitch mySwitch = RCSwitch();
+//RCSwitch mySwitch = RCSwitch();
 
 void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
@@ -19,7 +19,7 @@ void setup() {
 }
 
 void loop() {
-	int buttonValue = digitalRead(BUTTON);
+	/*int buttonValue = digitalRead(BUTTON);
 	if (buttonValue == HIGH)
 	{
 		int currentStatus = digitalRead(LED_BUILTIN);
@@ -31,9 +31,9 @@ void loop() {
 		{
 			digitalWrite(LED_BUILTIN, LOW);
 		}
-	}
-	/*if (mySwitch.available()) {
-		output(mySwitch.getReceivedValue(), mySwitch.getReceivedBitlength(), mySwitch.getReceivedDelay(), mySwitch.getReceivedRawdata(), mySwitch.getReceivedProtocol());
-		mySwitch.resetAvailable();
 	}*/
+	//if (mySwitch.available()) {
+	//	//output(mySwitch.getReceivedValue(), mySwitch.getReceivedBitlength(), mySwitch.getReceivedDelay(), mySwitch.getReceivedRawdata(), mySwitch.getReceivedProtocol());
+	//	mySwitch.resetAvailable();
+	//}
 }
