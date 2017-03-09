@@ -4,8 +4,150 @@ Created:	3/7/2017 8:03:02 PM
 Author:	RevilS
 */
 
-int upRelayPin = 12;
-int downRelayPin = 10;
+class Relay {
+
+	int _pin;
+	int _state;
+
+public:
+	Relay() {};
+
+
+public:
+	Relay(int pin)
+	{
+		_pin = pin;
+		_state = LOW;
+		pinMode(_pin, OUTPUT);
+	}
+
+	int getState()
+	{
+		_state = digitalRead(_pin);
+		return _state;
+	}
+
+	void setState(int state)
+	{
+		if (_state != state)
+		{
+			_state = state;
+			digitalWrite(_pin, _state);
+		}
+	}
+
+};
+
+class RfCommand {
+
+public:
+	RfCommand() {};
+
+public:
+	RfCommand(int commandCode, int commandDuration, Relay& relay)
+	{
+		_commandCode = commandCode;
+		_relay = relay;
+		_commandDuration = commandDuration;
+	}
+
+	int _commandCode;
+	int _commandDuration;
+	unsigned long _nextUpdateTime = 0;
+	Relay _relay;
+
+	void ResetDuration()
+	{
+		_nextUpdateTime = 0;
+	};
+
+	int getCode()
+	{
+		return _commandCode;
+	};
+
+	int getRelayState()
+	{
+		return _relay.getState();
+	};
+
+	void Update(int rfCode)
+	{
+		if (_nextUpdateTime < millis())
+		{
+			_nextUpdateTime = 0;
+			_relay.setState(LOW);
+		}
+
+		// Return if code does not match
+		if (rfCode != _commandCode)
+		{
+			return;
+		}
+
+		if (rfCode == _commandCode && _nextUpdateTime == 0)
+		{
+			_nextUpdateTime = millis() + _commandDuration;
+			_relay.setState(HIGH);
+		}
+	}
+
+	void reset()
+	{
+		_relay.setState(LOW);
+		_nextUpdateTime = 0;
+	}
+};
+
+class CommandCoordinator
+{
+	RfCommand _upCommand;
+	RfCommand _downCommand;
+
+	int _upCommandCode = _upCommand.getCode();	int _downCommandCode = _downCommand.getCode();
+	String _direction;
+
+public:
+	CommandCoordinator(RfCommand upCommand, RfCommand downCommand)
+	{
+		_upCommand = upCommand;
+		_downCommand = downCommand;
+	};
+
+	void resetDuration()
+	{
+		_upCommand.ResetDuration();
+		_downCommand.ResetDuration();
+	};
+
+	void update(int rfCode)
+	{
+		if (rfCode == _upCommand.getCode() && _downCommand.getRelayState() == HIGH)
+		{
+			_downCommand.reset();
+			delay(2000);
+			_upCommand.Update(rfCode);
+		}
+		else if (rfCode == _downCommand.getCode() && _upCommand.getRelayState() == HIGH)
+		{
+			_upCommand.reset();
+			delay(2000);
+			_downCommand.Update(rfCode);
+		}
+		else
+		{
+			_upCommand.Update(rfCode);
+			_downCommand.Update(rfCode);
+		}
+	}
+};
+
+
+Relay upRelay(12);
+Relay downRelay(10);
+RfCommand upCommand(1500, 5000, upRelay);
+RfCommand downCommand(1600, 5000, downRelay);
+CommandCoordinator commandCoordinator(upCommand, downCommand);
 
 int upButtonPin = 2;
 int downButtonPin = 4;
@@ -16,23 +158,7 @@ int downRelayPinState = LOW;
 int upButtonPinState = LOW;
 int downButtonPinState = LOW;
 
-// RF Instructions
-//int goUpRfCode = 12;
-//int goDownRfCode = 14;
-
 int rfCodeInput = 0;
-
-// RfCommands
-int rfGoUpCode = 1500;
-int rfGoDownCode = 1600;
-
-// RfCommands Duration
-int rfGoUpDuration = 5000;
-int rfGoDownDuration = 5000;
-
-// RfCommands UpdateTime
-unsigned long rfUpNextUpdateTime = 0;
-unsigned long rfDownNextUpdateTime = 0;
 
 int goUpexperimentDone = false;
 int goDownexperimentDone = false;
@@ -40,9 +166,6 @@ int goDownexperimentDone = false;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	pinMode(upRelayPin, OUTPUT);
-	pinMode(downRelayPin, OUTPUT);
-
 	pinMode(upButtonPin, INPUT);
 	pinMode(downButtonPin, INPUT);
 }
@@ -61,11 +184,11 @@ void loop() {
 		rfCodeInput = 1500;
 	}
 
-	if (millis() > 10000 && !goDownexperimentDone)
-	{
-		goDownexperimentDone = true;
-		rfCodeInput = 1600;
-	}
+	//if (millis() > 4000 && !goDownexperimentDone)
+	//{
+	//	goDownexperimentDone = true;
+	//	rfCodeInput = 1600;
+	//}
 
 
 	/*End of Testing*/
@@ -74,8 +197,8 @@ void loop() {
 	upButtonPinState = digitalRead(upButtonPin);
 	downButtonPinState = digitalRead(downButtonPin);
 
-	upRelayPinState = digitalRead(upRelayPin);
-	downRelayPinState = digitalRead(downRelayPin);
+	upRelayPinState = upRelay.getState();
+	downRelayPinState = downRelay.getState();
 
 	// 
 	if (upRelayPinState == HIGH && downRelayPinState == HIGH)
@@ -96,106 +219,36 @@ void loop() {
 
 		////////////////////////// Case otan allazei kateuthinsi amesws gia na min kaei to motori.
 
-
-
-	/*	if (upButtonPinState == HIGH && downRelayPinState == HIGH)
+		if (upButtonPinState == HIGH && downRelayPinState == HIGH)
 		{
-			setUpRelayState(upButtonPinState);
-			setDownRelayState(downButtonPinState);
+			downRelay.setState(LOW);
+			delay(3000);
+			upRelay.setState(HIGH);
+		}
+
+		if (downButtonPinState == HIGH && upRelayPinState == HIGH)
+		{
+			upRelay.setState(LOW);
+			delay(3000);
+			downRelay.setState(upButtonPinState);
 		}
 		else
 		{
-			setDownRelayState(downButtonPinState);
-			setUpRelayState(upButtonPinState);			
-		}*/
+			upRelay.setState(upButtonPinState);
+			downRelay.setState(downButtonPinState);
+		}
 
-		setUpRelayState(upButtonPinState);
-		setDownRelayState(downButtonPinState);
-
-		rfUpNextUpdateTime = 0;
-		rfDownNextUpdateTime = 0;
+		commandCoordinator.resetDuration();
 	}
 	else
 	{
-		if (rfUpNextUpdateTime < millis())
-		{
-			rfUpNextUpdateTime = 0;
-			setUpRelayState(LOW);
-		}
-
-		if (rfDownNextUpdateTime < millis())
-		{
-			rfDownNextUpdateTime = 0;
-			setDownRelayState(LOW);
-		}
-
-		// Return if code does not match
-		if (rfCodeInput != rfGoUpCode && rfCodeInput != rfGoDownCode)
-		{
-			return;
-		}
-		else
-		{
-			if (rfCodeInput == rfGoUpCode && rfUpNextUpdateTime == 0)
-			{
-				if (downRelayPinState == HIGH && rfDownNextUpdateTime > 0)
-				{
-					setDownRelayState(LOW);
-					rfDownNextUpdateTime = 0;
-					delay(2000);
-				}
-				rfUpNextUpdateTime = millis() + rfGoUpDuration;
-				setUpRelayState(HIGH);
-			}
-			else if (rfCodeInput == rfGoDownCode && rfDownNextUpdateTime == 0)
-			{
-				if (upRelayPinState == HIGH && rfUpNextUpdateTime > 0)
-				{
-					setUpRelayState(LOW);
-					rfUpNextUpdateTime = 0;
-					delay(2000);
-				}
-				rfDownNextUpdateTime = millis() + rfGoDownDuration;
-				setDownRelayState(HIGH);
-			}
-		}
+		commandCoordinator.update(rfCodeInput);
 	}
 }
 
 void stopEverything()
 {
-	setUpRelayState(LOW);
-	setDownRelayState(LOW);
+	upRelay.setState(LOW);
+	downRelay.setState(LOW);
 }
 
-void setUpRelayState(int state)
-{
-	if (upRelayPinState != state)
-	{/*
-		if (upRelayPinState==HIGH && (downRelayPinState == HIGH || rfDownNextUpdateTime > 0))
-		{
-			setDownRelayState(LOW);
-			rfDownNextUpdateTime = 0;
-			delay(2000);
-		}	 
-*/
-		upRelayPinState = state;
-		digitalWrite(upRelayPin, upRelayPinState);
-	}
-}
-
-void setDownRelayState(int state)
-{
-	if (downRelayPinState != state)
-	{
-		/*if (downRelayPinState==HIGH && (upRelayPinState == HIGH || rfUpNextUpdateTime > 0))
-		{
-			setUpRelayState(LOW);
-			rfUpNextUpdateTime = 0;
-			delay(2000);
-		}
-*/
-		downRelayPinState = state;
-		digitalWrite(downRelayPin, downRelayPinState);
-	}
-}
