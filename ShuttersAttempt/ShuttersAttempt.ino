@@ -104,7 +104,8 @@ class CommandCoordinator
 	RfCommand _upCommand;
 	RfCommand _downCommand;
 
-	int _upCommandCode = _upCommand.getCode();	int _downCommandCode = _downCommand.getCode();
+	int _upCommandCode = _upCommand.getCode();
+	int _downCommandCode = _downCommand.getCode();
 	String _direction;
 
 public:
@@ -225,12 +226,11 @@ void loop() {
 			delay(3000);
 			upRelay.setState(HIGH);
 		}
-
-		if (downButtonPinState == HIGH && upRelayPinState == HIGH)
+		else if (downButtonPinState == HIGH && upRelayPinState == HIGH)
 		{
 			upRelay.setState(LOW);
 			delay(3000);
-			downRelay.setState(upButtonPinState);
+			downRelay.setState(HIGH);
 		}
 		else
 		{
