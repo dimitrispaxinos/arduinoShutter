@@ -28,12 +28,9 @@ public:
 	}
 
 	void setState(int state)
-	{
-		if (_state != state)
-		{
-			_state = state;
-			digitalWrite(_pin, _state);
-		}
+	{							   
+		_state = state;
+		digitalWrite(_pin, _state);
 	}
 
 };
@@ -109,7 +106,7 @@ class CommandCoordinator
 	String _direction;
 
 public:
-	CommandCoordinator(RfCommand upCommand, RfCommand downCommand)
+	CommandCoordinator(RfCommand& upCommand, RfCommand& downCommand)
 	{
 		_upCommand = upCommand;
 		_downCommand = downCommand;
