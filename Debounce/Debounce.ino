@@ -32,8 +32,8 @@ http://www.arduino.cc/en/Tutorial/Debounce
 
 // constants won't change. They're used here to
 // set pin numbers:
-const int buttonPin = 10;    // the number of the pushbutton pin
-const int ledPin = 5;      // the number of the LED pin
+const int buttonPin = 5;    // the number of the pushbutton pin
+const int ledPin = 12;      // the number of the LED pin
 
 							// Variables will change:
 int ledState = HIGH;         // the current state of the output pin
@@ -57,13 +57,13 @@ int reading = 0;
 void loop() {
 	// read the state of the switch into a local variable:
 	int reading = digitalRead(buttonPin);
-	ledState = debounce(buttonPin, ledPin, reading, buttonState, lastButtonState, lastDebounceTime, debounceDelay, ledState);
+	ledState = debounce(buttonPin, reading, buttonState, lastButtonState, lastDebounceTime, debounceDelay, ledState);
 	digitalWrite(ledPin, ledState);
 	lastButtonState = reading;
 }
 
 
-int debounce(int btnpin, int lpin, int reading, int &btnState, int lastbtnState, unsigned long &lDTime, unsigned long delay, int lState)
+int debounce(int btnpin, int reading, int &btnState, int lastbtnState, unsigned long &lDTime, unsigned long delay, int lState)
 {
 
 	// check to see if you just pressed the button
