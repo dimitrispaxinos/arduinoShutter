@@ -112,6 +112,9 @@ class CommandCoordinator
 	int _delay = 1500;
 
 public:
+	CommandCoordinator() {};
+
+public:
 	CommandCoordinator(RfCommand& upCommand, RfCommand& downCommand, int directionSwitchingDuration)
 	{
 		_upCommand = upCommand;
@@ -178,19 +181,6 @@ public:
 
 class ButtonCoordinator
 {
-
-public:
-	ButtonCoordinator(int upButtonPin, int downButtonPin, Relay& upRelay, Relay& downRelay)
-	{
-		_upButtonPin = upButtonPin;
-		_downButtonPin = downButtonPin;
-		_upRelay = upRelay;
-		_downRelay = downRelay;
-
-		pinMode(_upButtonPin, INPUT);
-		pinMode(_downButtonPin, INPUT);
-	}
-
 	Relay _upRelay;
 	Relay _downRelay;
 
@@ -204,7 +194,25 @@ public:
 
 	unsigned long _goDownNextUpdateTime = 0;
 	unsigned long _goUpNextUpdateTime = 0;
-	int directionSwitchingDuration = 1000;
+	int _directionSwitchingDuration;
+
+
+
+public:
+	ButtonCoordinator() {};
+
+public:
+	ButtonCoordinator(int upButtonPin, int downButtonPin, Relay& upRelay, Relay& downRelay, int directionSwitchingDuration)
+	{
+		_upButtonPin = upButtonPin;
+		_downButtonPin = downButtonPin;
+		_upRelay = upRelay;
+		_downRelay = downRelay;
+		_directionSwitchingDuration = directionSwitchingDuration;
+
+		pinMode(_upButtonPin, INPUT);
+		pinMode(_downButtonPin, INPUT);
+	}
 
 	int Update()
 	{
@@ -233,7 +241,7 @@ public:
 			{
 				if (_downRelayPinState == HIGH && _goUpNextUpdateTime == 0)
 				{
-					_goUpNextUpdateTime = directionSwitchingDuration + millis();
+					_goUpNextUpdateTime = _directionSwitchingDuration + millis();
 					_downRelay.setState(LOW);
 				}
 
@@ -248,7 +256,7 @@ public:
 			{
 				if (_upRelayPinState == HIGH && _goDownNextUpdateTime == 0)
 				{
-					_goDownNextUpdateTime = directionSwitchingDuration + millis();
+					_goDownNextUpdateTime = _directionSwitchingDuration + millis();
 					_upRelay.setState(LOW);
 				}
 
@@ -275,59 +283,92 @@ public:
 	}
 };
 
-int upButtonPin = 2;
-int downButtonPin = 4;
-int upRelayPin = 12;
-int downRelayPin = 10;
+class ShutterSwitch
+{
+	CommandCoordinator commandCoordinator;
+	ButtonCoordinator buttonCoordinator;
 
-Relay upRelay(upRelayPin);
-Relay downRelay(downRelayPin);
-RfCommand upCommand(1500, 5000, upRelay);
-RfCommand downCommand(1600, 5000, downRelay);
-CommandCoordinator commandCoordinator(upCommand, downCommand, 1500);
-ButtonCoordinator buttonCoordinator(upButtonPin, downButtonPin, upRelay, downRelay);
-int rfCodeInput = 0;
+public:
+	ShutterSwitch() {};
 
-int goUpexperimentDone = false;
-int goDownexperimentDone = false;
+public:
+	ShutterSwitch(int upButtonPin,
+		int downButtonPin,
+		int upRelayPin,
+		int downRelayPin,
+		int upCCode,
+		int downCCode,
+		int goUpRfDuration,
+		int goDownRfDuration,
+		int switchingDuration
+	)
+	{
+		Relay upRelay(upRelayPin);
+		Relay downRelay(downRelayPin);
+		RfCommand upCommand(upCCode, goUpRfDuration, upRelay);
+		RfCommand downCommand(downCCode, goDownRfDuration, downRelay);
+		commandCoordinator = CommandCoordinator(upCommand, downCommand, 1500);
+		buttonCoordinator = ButtonCoordinator(upButtonPin, downButtonPin, upRelay, downRelay, switchingDuration);
+	}
+
+	int rfCodeInput = 0;
+
+	int goUpexperimentDone = false;
+	int goDownexperimentDone = false;
+
+	void Loop()
+	{
+		/*For Testing*/
+		if (rfCodeInput == 1500 || rfCodeInput == 1600)
+		{
+			rfCodeInput = 0;
+		}
+
+		if (millis() > 1500 && !goUpexperimentDone)
+		{
+			goUpexperimentDone = true;
+			rfCodeInput = 1500;
+		}
+
+		if (millis() > 3000 && !goDownexperimentDone)
+		{
+			goDownexperimentDone = true;
+			rfCodeInput = 1600;
+		}
+
+		/*End of Testing*/
 
 
+		if (buttonCoordinator.Update() == true)
+		{
+			commandCoordinator.resetDuration();
+		}
+		else
+		{
+			commandCoordinator.update(rfCodeInput);
+		}
+	}
+};
+
+ShutterSwitch shutterSwitch;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
 
+	int upBtnPin = 2;
+	int downBtnPin = 4;
+	int upRelPin = 12;
+	int downRelPin = 10;
+
+	int _upCCode = 1500;
+	int _downCCode = 1600;
+	int _goUpRfDuration = 5000;
+	int _goDownRfDuration = 5000;					
+
+	shutterSwitch = ShutterSwitch(upBtnPin, downBtnPin, upRelPin, downRelPin, _upCCode, _downCCode, _goUpRfDuration, _goDownRfDuration, 1200);
 }
 
 // the loop function runs over and over again until power down or reset
 void loop() {
-	/*For Testing*/
-	if (rfCodeInput == 1500 || rfCodeInput == 1600)
-	{
-		rfCodeInput = 0;
-	}
-
-	if (millis() > 1500 && !goUpexperimentDone)
-	{
-		goUpexperimentDone = true;
-		rfCodeInput = 1500;
-	}
-
-	if (millis() > 3000 && !goDownexperimentDone)
-	{
-		goDownexperimentDone = true;
-		rfCodeInput = 1600;
-	}	  
-
-	/*End of Testing*/
-
-	if (buttonCoordinator.Update() == true)
-	{
-		commandCoordinator.resetDuration();
-	}
-	else
-	{
-		commandCoordinator.update(rfCodeInput);
-	}
+	shutterSwitch.Loop();
 }
-
-
