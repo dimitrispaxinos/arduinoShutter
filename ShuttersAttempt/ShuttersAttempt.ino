@@ -143,7 +143,7 @@ public:
 			return;
 		}
 
-		if (rfCode == _upCommand.getCode())	
+		if (rfCode == _upCommand.getCode())
 		{
 			if (_downCommand.getRelayState() == HIGH)
 			{
@@ -176,35 +176,126 @@ public:
 	}
 };
 
+class ButtonCoordinator
+{
 
-Relay upRelay(12);
-Relay downRelay(10);
-RfCommand upCommand(1500, 5000, upRelay);
-RfCommand downCommand(1600, 5000, downRelay);
-CommandCoordinator commandCoordinator(upCommand, downCommand, 1500);
+public:
+	ButtonCoordinator(int upButtonPin, int downButtonPin, Relay& upRelay, Relay& downRelay)
+	{
+		_upButtonPin = upButtonPin;
+		_downButtonPin = downButtonPin;
+		_upRelay = upRelay;
+		_downRelay = downRelay;
+
+		pinMode(_upButtonPin, INPUT);
+		pinMode(_downButtonPin, INPUT);
+	}
+
+	Relay _upRelay;
+	Relay _downRelay;
+
+
+	int _upButtonPin;
+	int _downButtonPin;
+	int _upButtonPinState = LOW;
+	int _downButtonPinState = LOW;
+	int _upRelayPinState = LOW;
+	int _downRelayPinState = LOW;
+
+	unsigned long _goDownNextUpdateTime = 0;
+	unsigned long _goUpNextUpdateTime = 0;
+	int directionSwitchingDuration = 1000;
+
+	int Update()
+	{
+		int _upRelayPinState = _upRelay.getState();
+		int _downRelayPinState = _downRelay.getState();
+
+		_upButtonPinState = digitalRead(_upButtonPin);
+		_downButtonPinState = digitalRead(_downButtonPin);
+
+		if (_upRelayPinState == HIGH && _downRelayPinState == HIGH)
+		{
+			stopEverything();
+			return true;
+		}
+
+		if (_upButtonPinState == HIGH || _downButtonPinState == HIGH)
+		{
+			// If both are pressed, stop everything and return
+			if (_upButtonPinState == HIGH && _downButtonPinState == HIGH)
+			{
+				stopEverything();
+				return true;
+			}
+
+			if (_upButtonPinState == HIGH) // && downRelayPinState == HIGH)
+			{
+				if (_downRelayPinState == HIGH && _goUpNextUpdateTime == 0)
+				{
+					_goUpNextUpdateTime = directionSwitchingDuration + millis();
+					_downRelay.setState(LOW);
+				}
+
+				if (_goUpNextUpdateTime < millis())
+				{
+					_goUpNextUpdateTime = 0;
+					_upRelay.setState(_upButtonPinState);
+				}
+
+			}
+			else if (_downButtonPinState == HIGH)
+			{
+				if (_upRelayPinState == HIGH && _goDownNextUpdateTime == 0)
+				{
+					_goDownNextUpdateTime = directionSwitchingDuration + millis();
+					_upRelay.setState(LOW);
+				}
+
+				if (_goDownNextUpdateTime < millis())
+				{
+					_goDownNextUpdateTime = 0;
+					_downRelay.setState(_downButtonPinState);
+				}
+			}
+			else
+			{
+				_upRelay.setState(_upButtonPinState);
+				_downRelay.setState(_downButtonPinState);
+			}
+			return true;
+		}
+		return false;
+	};
+
+	void stopEverything()
+	{
+		_upRelay.setState(LOW);
+		_downRelay.setState(LOW);
+	}
+};
 
 int upButtonPin = 2;
 int downButtonPin = 4;
+int upRelayPin = 12;
+int downRelayPin = 10;
 
-int upRelayPinState = LOW;
-int downRelayPinState = LOW;
-
-int upButtonPinState = LOW;
-int downButtonPinState = LOW;
-
+Relay upRelay(upRelayPin);
+Relay downRelay(downRelayPin);
+RfCommand upCommand(1500, 5000, upRelay);
+RfCommand downCommand(1600, 5000, downRelay);
+CommandCoordinator commandCoordinator(upCommand, downCommand, 1500);
+ButtonCoordinator buttonCoordinator(upButtonPin, downButtonPin, upRelay, downRelay);
 int rfCodeInput = 0;
 
 int goUpexperimentDone = false;
 int goDownexperimentDone = false;
-unsigned long goDownNextUpdateTime = 0;
-unsigned long goUpNextUpdateTime = 0;
-int directionSwitchingDuration = 1000;
+
 
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	pinMode(upButtonPin, INPUT);
-	pinMode(downButtonPin, INPUT);
+
 }
 
 // the loop function runs over and over again until power down or reset
@@ -225,72 +316,12 @@ void loop() {
 	{
 		goDownexperimentDone = true;
 		rfCodeInput = 1600;
-	}
-
+	}	  
 
 	/*End of Testing*/
 
-	// Read Input
-	upButtonPinState = digitalRead(upButtonPin);
-	downButtonPinState = digitalRead(downButtonPin);
-
-	upRelayPinState = upRelay.getState();
-	downRelayPinState = downRelay.getState();
-
-	// 
-	if (upRelayPinState == HIGH && downRelayPinState == HIGH)
+	if (buttonCoordinator.Update() == true)
 	{
-		stopEverything();
-		return;
-	}
-
-
-	if (upButtonPinState == HIGH || downButtonPinState == HIGH)
-	{
-		// If both are pressed, stop everything and return
-		if (upButtonPinState == HIGH && downButtonPinState == HIGH)
-		{
-			stopEverything();
-			return;
-		}
-
-		////////////////////////// Case otan allazei kateuthinsi amesws gia na min kaei to motori.
-
-		if (upButtonPinState == HIGH) // && downRelayPinState == HIGH)
-		{
-			if (downRelayPinState == HIGH && goUpNextUpdateTime == 0)
-			{
-				goUpNextUpdateTime = directionSwitchingDuration + millis();
-				downRelay.setState(LOW);
-			}
-
-			if (goUpNextUpdateTime < millis())
-			{
-				goUpNextUpdateTime = 0;
-				upRelay.setState(upButtonPinState);
-			}
-
-		}
-		else if (downButtonPinState == HIGH)
-		{
-			if (upRelayPinState == HIGH && goDownNextUpdateTime == 0)
-			{
-				goDownNextUpdateTime = directionSwitchingDuration + millis();
-				upRelay.setState(LOW);
-			}
-
-			if (goDownNextUpdateTime < millis())
-			{
-				goDownNextUpdateTime = 0;
-				downRelay.setState(downButtonPinState);
-			}
-		}
-		else
-		{
-			upRelay.setState(upButtonPinState);
-			downRelay.setState(downButtonPinState);
-		}
-
 		commandCoordinator.resetDuration();
 	}
 	else
@@ -299,8 +330,4 @@ void loop() {
 	}
 }
 
-void stopEverything()
-{
-	upRelay.setState(LOW);
-	downRelay.setState(LOW);
-}
+
