@@ -1,37 +1,37 @@
-/*
-Name:		ShuttersAttempt.ino
-Created:	3/7/2017 8:03:02 PM
-Author:	RevilS
-*/
+	/*
+	Name:		ShuttersAttempt.ino
+	Created:	3/7/2017 8:03:02 PM
+	Author:	RevilS
+	*/
 
-class Relay {
+	class Relay {
 
 	int _pin;
 	int _state;
 
-public:
-	Relay() {};
+	public:
+		Relay() {};
 
 
-public:
-	Relay(int pin)
-	{
-		_pin = pin;
-		_state = LOW;
-		pinMode(_pin, OUTPUT);
-	}
+	public:
+		Relay(int pin)
+		{
+			_pin = pin;
+			_state = LOW;
+			pinMode(_pin, OUTPUT);
+		}
 
-	int getState()
-	{
-		_state = digitalRead(_pin);
-		return _state;
-	}
+		int getState()
+		{
+			_state = digitalRead(_pin);
+			return _state;
+		}
 
-	void setState(int state)
-	{							   
-		_state = state;
-		digitalWrite(_pin, _state);
-	}
+		void setState(int state)
+		{
+			_state = state;
+			digitalWrite(_pin, _state);
+		}
 
 };
 
@@ -103,13 +103,17 @@ class CommandCoordinator
 
 	int _upCommandCode = _upCommand.getCode();
 	int _downCommandCode = _downCommand.getCode();
+	int _directionSwitchingDuration = 0;
+	unsigned long _goDownNextUpdateTime = 0;
+	unsigned long _goUpNextUpdateTime = 0;
 	String _direction;
 
 public:
-	CommandCoordinator(RfCommand& upCommand, RfCommand& downCommand)
+	CommandCoordinator(RfCommand& upCommand, RfCommand& downCommand, int directionSwitchingDuration)
 	{
 		_upCommand = upCommand;
 		_downCommand = downCommand;
+		_directionSwitchingDuration = directionSwitchingDuration;
 	};
 
 	void resetDuration()
@@ -145,7 +149,7 @@ Relay upRelay(12);
 Relay downRelay(10);
 RfCommand upCommand(1500, 5000, upRelay);
 RfCommand downCommand(1600, 5000, downRelay);
-CommandCoordinator commandCoordinator(upCommand, downCommand);
+CommandCoordinator commandCoordinator(upCommand, downCommand, 1500);
 
 int upButtonPin = 2;
 int downButtonPin = 4;
@@ -160,6 +164,9 @@ int rfCodeInput = 0;
 
 int goUpexperimentDone = false;
 int goDownexperimentDone = false;
+unsigned long goDownNextUpdateTime = 0;
+unsigned long goUpNextUpdateTime = 0;
+int directionSwitchingDuration = 1000;
 
 
 // the setup function runs once when you press reset or power the board
@@ -176,17 +183,17 @@ void loop() {
 		rfCodeInput = 0;
 	}
 
-	if (millis() > 1500 && !goUpexperimentDone)
+	/*if (millis() > 1500 && !goUpexperimentDone)
 	{
 		goUpexperimentDone = true;
 		rfCodeInput = 1500;
-	}
+	}*/
 
-	//if (millis() > 4000 && !goDownexperimentDone)
-	//{
-	//	goDownexperimentDone = true;
-	//	rfCodeInput = 1600;
-	//}
+	if (millis() > 1500 && !goDownexperimentDone)
+	{
+		goDownexperimentDone = true;
+		rfCodeInput = 1600;
+	}
 
 
 	/*End of Testing*/
@@ -217,17 +224,34 @@ void loop() {
 
 		////////////////////////// Case otan allazei kateuthinsi amesws gia na min kaei to motori.
 
-		if (upButtonPinState == HIGH && downRelayPinState == HIGH)
+		if (upButtonPinState == HIGH) // && downRelayPinState == HIGH)
 		{
-			downRelay.setState(LOW);
-			delay(3000);
-			upRelay.setState(HIGH);
+			if (downRelayPinState == HIGH && goUpNextUpdateTime == 0)
+			{
+				goUpNextUpdateTime = directionSwitchingDuration + millis();
+				downRelay.setState(LOW);
+			}
+
+			if (goUpNextUpdateTime < millis())
+			{
+				goUpNextUpdateTime = 0;
+				upRelay.setState(upButtonPinState);
+			}
+
 		}
-		else if (downButtonPinState == HIGH && upRelayPinState == HIGH)
+		else if (downButtonPinState == HIGH)
 		{
-			upRelay.setState(LOW);
-			delay(3000);
-			downRelay.setState(HIGH);
+			if (upRelayPinState == HIGH && goDownNextUpdateTime == 0)
+			{
+				goDownNextUpdateTime = directionSwitchingDuration + millis();
+				upRelay.setState(LOW);
+			}
+
+			if (goDownNextUpdateTime < millis())
+			{
+				goDownNextUpdateTime = 0;
+				downRelay.setState(downButtonPinState);
+			}
 		}
 		else
 		{
@@ -248,4 +272,3 @@ void stopEverything()
 	upRelay.setState(LOW);
 	downRelay.setState(LOW);
 }
-
