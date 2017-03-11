@@ -106,13 +106,13 @@ class CommandCoordinator
 
 	int _upCommandCode = _upCommand.getCode();
 	int _downCommandCode = _downCommand.getCode();
-	int _directionSwitchingDuration = 0;
+	int _directionSwitchingDuration;
 	unsigned long _goDownNextUpdateTime = 0;
 	unsigned long _goUpNextUpdateTime = 0;
 	int _delayUpCommand = false;
 	int _delayDownCommand = false;
 
-	int _delay = 1500;
+	//int _delay = 1500;
 
 public:
 	CommandCoordinator() {};
@@ -133,6 +133,7 @@ public:
 
 	void update(int rfCode)
 	{
+
 		if (_delayUpCommand && _goUpNextUpdateTime < millis())
 		{
 			_upCommand.Update(_upCommand.getCode());
@@ -149,12 +150,15 @@ public:
 			return;
 		}
 
+		if (_delayDownCommand || _delayUpCommand)
+			return;
+
 		if (rfCode == _upCommand.getCode())
 		{
 			if (_downCommand.getRelayState() == HIGH)
 			{
 				_downCommand.reset();
-				_goUpNextUpdateTime = _delay + millis();
+				_goUpNextUpdateTime = _directionSwitchingDuration + millis();
 				_delayUpCommand = true;
 			}
 			else {
@@ -163,11 +167,15 @@ public:
 		}
 		else if (rfCode == _downCommand.getCode())
 		{
-
+			Serial.println(_upCommand.getRelayState());
+			/*int s = _upCommand.getRelayState();
+			if (s)
+*/
 			if (_upCommand.getRelayState() == HIGH)
 			{
 				_upCommand.reset();
-				_goDownNextUpdateTime = _delay + millis();
+				Serial.println("RESET");
+				_goDownNextUpdateTime = _directionSwitchingDuration + millis();
 				_delayDownCommand = true;
 			}
 			else {
@@ -216,6 +224,16 @@ public:
 		_downRelay = downRelay;
 		_directionSwitchingDuration = directionSwitchingDuration;
 
+		
+	}
+
+	void setup()
+	{
+		Serial.println("setting upbutton");
+		Serial.println(_upButtonPin);
+		Serial.println("setting downbutton");
+		Serial.println(_downButtonPin);
+
 		pinMode(_upButtonPin, INPUT);
 		pinMode(_downButtonPin, INPUT);
 
@@ -231,11 +249,15 @@ public:
 		int _upRelayPinState = _upRelay.getState();
 		int _downRelayPinState = _downRelay.getState();
 
+		upBtnDebouncer.update();
+		downBtnDebouncer.update();
 		_upButtonPinState = upBtnDebouncer.read();
 		_downButtonPinState = downBtnDebouncer.read();
 
-	/*	_upButtonPinState = digitalRead(_upButtonPin);
-		_downButtonPinState = digitalRead(_downButtonPin);*/
+		//_upButtonPinState = digitalRead(_upButtonPin);
+		//_downButtonPinState = digitalRead(_downButtonPin);
+
+		//Serial.println(_upButtonPinState);
 
 		if (_upRelayPinState == HIGH && _downRelayPinState == HIGH)
 		{
@@ -323,7 +345,7 @@ public:
 		Relay downRelay(downRelayPin);
 		RfCommand upCommand(upCCode, goUpRfDuration, upRelay);
 		RfCommand downCommand(downCCode, goDownRfDuration, downRelay);
-		commandCoordinator = CommandCoordinator(upCommand, downCommand, 1500);
+		commandCoordinator = CommandCoordinator(upCommand, downCommand, switchingDuration);
 		buttonCoordinator = ButtonCoordinator(upButtonPin, downButtonPin, upRelay, downRelay, switchingDuration);
 		mySwitch = RCSwitch();
 		Serial.begin(9600);
@@ -335,33 +357,38 @@ public:
 	int goUpexperimentDone = false;
 	int goDownexperimentDone = false;
 
+	void setup()
+	{
+		buttonCoordinator.setup();
+	}
+
 	void Loop()
 	{
 		if (mySwitch.available()) {
 			rfCodeInput = mySwitch.getReceivedValue();
-			// Serial.println(mySwitch.getReceivedValue());
+			Serial.println(mySwitch.getReceivedValue());
 			//output(mySwitch.getReceivedValue(), mySwitch.getReceivedBitlength(), mySwitch.getReceivedDelay(), mySwitch.getReceivedRawdata(), mySwitch.getReceivedProtocol());
 			mySwitch.resetAvailable();
 		}
 
 
 		/*For Testing*/
-		if (rfCodeInput == 1500 || rfCodeInput == 1600)
-		{
-			rfCodeInput = 0;
-		}
+		//if (rfCodeInput == 1500 || rfCodeInput == 1600)
+		//{
+		//	rfCodeInput = 0;
+		//}
 
-		if (millis() > 1500 && !goUpexperimentDone)
-		{
-			goUpexperimentDone = true;
-			rfCodeInput = 1500;
-		}
+		//if (millis() > 1500 && !goUpexperimentDone)
+		//{
+		//	goUpexperimentDone = true;
+		//	rfCodeInput = 1500;
+		//}
 
-		if (millis() > 3000 && !goDownexperimentDone)
-		{
-			goDownexperimentDone = true;
-			rfCodeInput = 1600;
-		}
+		//if (millis() > 3000 && !goDownexperimentDone)
+		//{
+		//	goDownexperimentDone = true;
+		//	rfCodeInput = 1600;
+		//}
 
 		/*End of Testing*/
 
@@ -382,17 +409,20 @@ ShutterSwitch shutterSwitch;
 // the setup function runs once when you press reset or power the board
 void setup() {
 
-	int upBtnPin = 2;
-	int downBtnPin = 4;
+	int upBtnPin = 5;
+	int downBtnPin = 6;
 	int upRelPin = 12;
 	int downRelPin = 10;
 
-	int _upCCode = 1500;
-	int _downCCode = 1600;
+	int _upCCode = 5588308;
+	int _downCCode = 5588309;
 	int _goUpRfDuration = 5000;
 	int _goDownRfDuration = 5000;
 
+
+
 	shutterSwitch = ShutterSwitch(upBtnPin, downBtnPin, upRelPin, downRelPin, _upCCode, _downCCode, _goUpRfDuration, _goDownRfDuration, 1200);
+	shutterSwitch.setup();
 }
 
 // the loop function runs over and over again until power down or reset
