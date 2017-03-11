@@ -1,37 +1,37 @@
-	/*
-	Name:		ShuttersAttempt.ino
-	Created:	3/7/2017 8:03:02 PM
-	Author:	RevilS
-	*/
+/*
+Name:		ShuttersAttempt.ino
+Created:	3/7/2017 8:03:02 PM
+Author:	RevilS
+*/
 
-	class Relay {
+class Relay {
 
 	int _pin;
 	int _state;
 
-	public:
-		Relay() {};
+public:
+	Relay() {};
 
 
-	public:
-		Relay(int pin)
-		{
-			_pin = pin;
-			_state = LOW;
-			pinMode(_pin, OUTPUT);
-		}
+public:
+	Relay(int pin)
+	{
+		_pin = pin;
+		_state = LOW;
+		pinMode(_pin, OUTPUT);
+	}
 
-		int getState()
-		{
-			_state = digitalRead(_pin);
-			return _state;
-		}
+	int getState()
+	{
+		_state = digitalRead(_pin);
+		return _state;
+	}
 
-		void setState(int state)
-		{
-			_state = state;
-			digitalWrite(_pin, _state);
-		}
+	void setState(int state)
+	{
+		_state = state;
+		digitalWrite(_pin, _state);
+	}
 
 };
 
@@ -106,7 +106,10 @@ class CommandCoordinator
 	int _directionSwitchingDuration = 0;
 	unsigned long _goDownNextUpdateTime = 0;
 	unsigned long _goUpNextUpdateTime = 0;
-	String _direction;
+	int _delayUpCommand = false;
+	int _delayDownCommand = false;
+
+	int _delay = 1500;
 
 public:
 	CommandCoordinator(RfCommand& upCommand, RfCommand& downCommand, int directionSwitchingDuration)
@@ -124,17 +127,46 @@ public:
 
 	void update(int rfCode)
 	{
-		if (rfCode == _upCommand.getCode() && _downCommand.getRelayState() == HIGH)
+		if (_delayUpCommand && _goUpNextUpdateTime < millis())
 		{
-			_downCommand.reset();
-			delay(2000);
-			_upCommand.Update(rfCode);
+			_upCommand.Update(_upCommand.getCode());
+			_goUpNextUpdateTime = 0;
+			_delayUpCommand = false;
+			return;
 		}
-		else if (rfCode == _downCommand.getCode() && _upCommand.getRelayState() == HIGH)
+
+		if (_delayDownCommand && _goDownNextUpdateTime < millis())
 		{
-			_upCommand.reset();
-			delay(2000);
-			_downCommand.Update(rfCode);
+			_downCommand.Update(_downCommand.getCode());
+			_goDownNextUpdateTime = 0;
+			_delayDownCommand = false;
+			return;
+		}
+
+		if (rfCode == _upCommand.getCode())	
+		{
+			if (_downCommand.getRelayState() == HIGH)
+			{
+				_downCommand.reset();
+				_goUpNextUpdateTime = _delay + millis();
+				_delayUpCommand = true;
+			}
+			else {
+				_upCommand.Update(rfCode);
+			}
+		}
+		else if (rfCode == _downCommand.getCode())
+		{
+
+			if (_upCommand.getRelayState() == HIGH)
+			{
+				_upCommand.reset();
+				_goDownNextUpdateTime = _delay + millis();
+				_delayDownCommand = true;
+			}
+			else {
+				_downCommand.Update(rfCode);
+			}
 		}
 		else
 		{
@@ -183,13 +215,13 @@ void loop() {
 		rfCodeInput = 0;
 	}
 
-	/*if (millis() > 1500 && !goUpexperimentDone)
+	if (millis() > 1500 && !goUpexperimentDone)
 	{
 		goUpexperimentDone = true;
 		rfCodeInput = 1500;
-	}*/
+	}
 
-	if (millis() > 1500 && !goDownexperimentDone)
+	if (millis() > 3000 && !goDownexperimentDone)
 	{
 		goDownexperimentDone = true;
 		rfCodeInput = 1600;
