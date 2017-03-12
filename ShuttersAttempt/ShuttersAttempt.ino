@@ -193,8 +193,7 @@ public:
 class ButtonCoordinator
 {
 	Relay _upRelay;
-	Relay _downRelay;
-
+	Relay _downRelay;  
 
 	int _upButtonPin;
 	int _downButtonPin;
@@ -234,8 +233,8 @@ public:
 		Serial.println("setting downbutton");
 		Serial.println(_downButtonPin);
 
-		pinMode(_upButtonPin, INPUT);
-		pinMode(_downButtonPin, INPUT);
+		pinMode(_upButtonPin, INPUT_PULLUP);
+		pinMode(_downButtonPin, INPUT_PULLUP);
 
 		upBtnDebouncer.attach(_upButtonPin);
 		downBtnDebouncer.attach(_downButtonPin);
@@ -265,7 +264,7 @@ public:
 			return true;
 		}
 
-		if (_upButtonPinState == HIGH || _downButtonPinState == HIGH)
+		if (_upButtonPinState == LOW || _downButtonPinState == LOW)
 		{
 			// If both are pressed, stop everything and return
 			if (_upButtonPinState == HIGH && _downButtonPinState == HIGH)
@@ -274,7 +273,7 @@ public:
 				return true;
 			}
 
-			if (_upButtonPinState == HIGH) // && downRelayPinState == HIGH)
+			if (_upButtonPinState == LOW) // && downRelayPinState == HIGH)
 			{
 				if (_downRelayPinState == HIGH && _goUpNextUpdateTime == 0)
 				{
@@ -285,11 +284,11 @@ public:
 				if (_goUpNextUpdateTime < millis())
 				{
 					_goUpNextUpdateTime = 0;
-					_upRelay.setState(_upButtonPinState);
+					_upRelay.setState(HIGH);
 				}
 
 			}
-			else if (_downButtonPinState == HIGH)
+			else if (_downButtonPinState == LOW)
 			{
 				if (_upRelayPinState == HIGH && _goDownNextUpdateTime == 0)
 				{
@@ -300,13 +299,13 @@ public:
 				if (_goDownNextUpdateTime < millis())
 				{
 					_goDownNextUpdateTime = 0;
-					_downRelay.setState(_downButtonPinState);
+					_downRelay.setState(HIGH);
 				}
 			}
 			else
 			{
-				_upRelay.setState(_upButtonPinState);
-				_downRelay.setState(_downButtonPinState);
+				_upRelay.setState(LOW);
+				_downRelay.setState(LOW);
 			}
 			return true;
 		}
