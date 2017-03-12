@@ -20,6 +20,7 @@ public:
 		_pin = pin;
 		_state = LOW;
 		pinMode(_pin, OUTPUT);
+		turnOff();
 	}
 
 	int getState()
@@ -28,9 +29,15 @@ public:
 		return _state;
 	}
 
-	void setState(int state)
+	void turnOff()
 	{
-		_state = state;
+		_state = HIGH;
+		digitalWrite(_pin, _state);
+	}
+
+	void turnOn()
+	{
+		_state = LOW;
 		digitalWrite(_pin, _state);
 	}
 
@@ -74,7 +81,7 @@ public:
 		if (_nextUpdateTime < millis())
 		{
 			_nextUpdateTime = 0;
-			_relay.setState(LOW);
+			_relay.turnOff();
 		}
 
 		// Return if code does not match
@@ -86,13 +93,13 @@ public:
 		if (rfCode == _commandCode && _nextUpdateTime == 0)
 		{
 			_nextUpdateTime = millis() + _commandDuration;
-			_relay.setState(HIGH);
+			_relay.turnOn();
 		}
 	}
 
 	void reset()
 	{
-		_relay.setState(LOW);
+		_relay.turnOff();
 		_nextUpdateTime = 0;
 	}
 };
@@ -129,12 +136,6 @@ public:
 
 	void update(int rfCode)
 	{
-		if (rfCode > 0)
-		{
-			Serial.println("rfCode: ");
-			Serial.println(rfCode);
-		}
-
 		if (_delayUpCommand && _goUpNextUpdateTime < millis())
 		{
 			_upCommand.Update(_upCommand.getCode());
@@ -156,7 +157,7 @@ public:
 
 		if (rfCode == _upCommand.getCode())
 		{
-			if (_downCommand.getRelayState() == HIGH)
+			if (_downCommand.getRelayState() == LOW)
 			{
 				_downCommand.reset();
 				_goUpNextUpdateTime = _directionSwitchingDuration + millis();
@@ -168,7 +169,7 @@ public:
 		}
 		else if (rfCode == _downCommand.getCode())
 		{
-			if (_upCommand.getRelayState() == HIGH)
+			if (_upCommand.getRelayState() == LOW)
 			{
 				_upCommand.reset();
 				_goDownNextUpdateTime = _directionSwitchingDuration + millis();
@@ -231,7 +232,7 @@ public:
 		_upButtonPinState = digitalRead(_upButtonPin);
 		_downButtonPinState = digitalRead(_downButtonPin);
 
-		if (_upRelayPinState == HIGH && _downRelayPinState == HIGH)
+		if (_upRelayPinState == LOW && _downRelayPinState == LOW)
 		{
 			stopEverything();
 			return true;
@@ -246,38 +247,38 @@ public:
 				return true;
 			}
 
-			if (_upButtonPinState == LOW) // && downRelayPinState == HIGH)
+			if (_upButtonPinState == LOW)
 			{
-				if (_downRelayPinState == HIGH && _goUpNextUpdateTime == 0)
+				if (_downRelayPinState == LOW && _goUpNextUpdateTime == 0)
 				{
 					_goUpNextUpdateTime = _directionSwitchingDuration + millis();
-					_downRelay.setState(LOW);
+					_downRelay.turnOff();
 				}
 
 				if (_goUpNextUpdateTime < millis())
 				{
 					_goUpNextUpdateTime = 0;
-					_upRelay.setState(HIGH);
+					_upRelay.turnOn();
 				}		
 			}
 			else if (_downButtonPinState == LOW)
 			{
-				if (_upRelayPinState == HIGH && _goDownNextUpdateTime == 0)
+				if (_upRelayPinState == LOW && _goDownNextUpdateTime == 0)
 				{
 					_goDownNextUpdateTime = _directionSwitchingDuration + millis();
-					_upRelay.setState(LOW);
+					_upRelay.turnOff();
 				}
 
 				if (_goDownNextUpdateTime < millis())
 				{
 					_goDownNextUpdateTime = 0;
-					_downRelay.setState(HIGH);
+					_downRelay.turnOn();
 				}
 			}
 			else
 			{
-				_upRelay.setState(LOW);
-				_downRelay.setState(LOW);
+				_upRelay.turnOff();
+				_downRelay.turnOff();
 			}
 			return true;
 		}
@@ -286,8 +287,8 @@ public:
 
 	void stopEverything()
 	{
-		_upRelay.setState(LOW);
-		_downRelay.setState(LOW);
+		_upRelay.turnOff();
+		_downRelay.turnOff();
 	}
 };
 
@@ -371,7 +372,6 @@ void setup() {
 	shutterSwitch = ShutterSwitch(upBtnPin, downBtnPin, upRelPin, downRelPin, _upCCode, _downCCode, _goUpRfDuration, _goDownRfDuration, 1200);
 	shutterSwitch.setup();
 }
-
 
 void loop() {
 	shutterSwitch.Loop();
