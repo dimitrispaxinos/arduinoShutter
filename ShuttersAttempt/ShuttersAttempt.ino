@@ -112,8 +112,6 @@ class CommandCoordinator
 	int _delayUpCommand = false;
 	int _delayDownCommand = false;
 
-	//int _delay = 1500;
-
 public:
 	CommandCoordinator() {};
 
@@ -133,6 +131,11 @@ public:
 
 	void update(int rfCode)
 	{
+		if (rfCode > 0)
+		{
+			Serial.println("rfCode: ");
+			Serial.println(rfCode);
+		}
 
 		if (_delayUpCommand && _goUpNextUpdateTime < millis())
 		{
@@ -155,6 +158,7 @@ public:
 
 		if (rfCode == _upCommand.getCode())
 		{
+			Serial.println("Up Command matched");
 			if (_downCommand.getRelayState() == HIGH)
 			{
 				_downCommand.reset();
@@ -167,10 +171,8 @@ public:
 		}
 		else if (rfCode == _downCommand.getCode())
 		{
-			Serial.println(_upCommand.getRelayState());
-			/*int s = _upCommand.getRelayState();
-			if (s)
-*/
+			Serial.println("Down Command matched");
+
 			if (_upCommand.getRelayState() == HIGH)
 			{
 				_upCommand.reset();
@@ -193,7 +195,7 @@ public:
 class ButtonCoordinator
 {
 	Relay _upRelay;
-	Relay _downRelay;  
+	Relay _downRelay;
 
 	int _upButtonPin;
 	int _downButtonPin;
@@ -223,7 +225,7 @@ public:
 		_downRelay = downRelay;
 		_directionSwitchingDuration = directionSwitchingDuration;
 
-		
+
 	}
 
 	void setup()
@@ -363,10 +365,10 @@ public:
 
 	void Loop()
 	{
+		rfCodeInput = 0;
 		if (mySwitch.available()) {
 			rfCodeInput = mySwitch.getReceivedValue();
 			Serial.println(mySwitch.getReceivedValue());
-			//output(mySwitch.getReceivedValue(), mySwitch.getReceivedBitlength(), mySwitch.getReceivedDelay(), mySwitch.getReceivedRawdata(), mySwitch.getReceivedProtocol());
 			mySwitch.resetAvailable();
 		}
 
