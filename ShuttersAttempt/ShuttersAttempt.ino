@@ -5,7 +5,6 @@ Author:	RevilS
 */
 
 #include <RCSwitch.h>
-#include <Bounce2.h>
 
 class Relay {
 
@@ -206,9 +205,6 @@ class ButtonCoordinator
 public:
 	ButtonCoordinator() {};
 
-	Bounce upBtnDebouncer = Bounce();
-	Bounce downBtnDebouncer = Bounce();
-
 public:
 	ButtonCoordinator(int upButtonPin, int downButtonPin, Relay& upRelay, Relay& downRelay, int directionSwitchingDuration)
 	{
@@ -225,12 +221,6 @@ public:
 	{
 		pinMode(_upButtonPin, INPUT_PULLUP);
 		pinMode(_downButtonPin, INPUT_PULLUP);
-
-		upBtnDebouncer.attach(_upButtonPin);
-		downBtnDebouncer.attach(_downButtonPin);
-
-		upBtnDebouncer.interval(300);
-		downBtnDebouncer.interval(300);
 	}
 
 	int Update()
@@ -240,11 +230,9 @@ public:
 
 		upBtnDebouncer.update();
 		downBtnDebouncer.update();
-		_upButtonPinState = upBtnDebouncer.read();
-		_downButtonPinState = downBtnDebouncer.read();
 
-		//_upButtonPinState = digitalRead(_upButtonPin);
-		//_downButtonPinState = digitalRead(_downButtonPin);
+		_upButtonPinState = digitalRead(_upButtonPin);
+		_downButtonPinState = digitalRead(_downButtonPin);
 
 		if (_upRelayPinState == HIGH && _downRelayPinState == HIGH)
 		{
