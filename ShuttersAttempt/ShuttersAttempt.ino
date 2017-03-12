@@ -15,7 +15,6 @@ class Relay {
 public:
 	Relay() {};
 
-
 public:
 	Relay(int pin)
 	{
@@ -158,7 +157,6 @@ public:
 
 		if (rfCode == _upCommand.getCode())
 		{
-			Serial.println("Up Command matched");
 			if (_downCommand.getRelayState() == HIGH)
 			{
 				_downCommand.reset();
@@ -171,12 +169,9 @@ public:
 		}
 		else if (rfCode == _downCommand.getCode())
 		{
-			Serial.println("Down Command matched");
-
 			if (_upCommand.getRelayState() == HIGH)
 			{
 				_upCommand.reset();
-				Serial.println("RESET");
 				_goDownNextUpdateTime = _directionSwitchingDuration + millis();
 				_delayDownCommand = true;
 			}
@@ -208,8 +203,6 @@ class ButtonCoordinator
 	unsigned long _goUpNextUpdateTime = 0;
 	int _directionSwitchingDuration;
 
-
-
 public:
 	ButtonCoordinator() {};
 
@@ -230,11 +223,6 @@ public:
 
 	void setup()
 	{
-		Serial.println("setting upbutton");
-		Serial.println(_upButtonPin);
-		Serial.println("setting downbutton");
-		Serial.println(_downButtonPin);
-
 		pinMode(_upButtonPin, INPUT_PULLUP);
 		pinMode(_downButtonPin, INPUT_PULLUP);
 
@@ -257,8 +245,6 @@ public:
 
 		//_upButtonPinState = digitalRead(_upButtonPin);
 		//_downButtonPinState = digitalRead(_downButtonPin);
-
-		//Serial.println(_upButtonPinState);
 
 		if (_upRelayPinState == HIGH && _downRelayPinState == HIGH)
 		{
@@ -287,8 +273,7 @@ public:
 				{
 					_goUpNextUpdateTime = 0;
 					_upRelay.setState(HIGH);
-				}
-
+				}		
 			}
 			else if (_downButtonPinState == LOW)
 			{
@@ -355,9 +340,6 @@ public:
 
 	int rfCodeInput = 0;
 
-	int goUpexperimentDone = false;
-	int goDownexperimentDone = false;
-
 	void setup()
 	{
 		buttonCoordinator.setup();
@@ -365,34 +347,14 @@ public:
 
 	void Loop()
 	{
+		// Reset every time. If switch is not available, the rfCode stays the same.
 		rfCodeInput = 0;
+
 		if (mySwitch.available()) {
 			rfCodeInput = mySwitch.getReceivedValue();
-			Serial.println(mySwitch.getReceivedValue());
+			//Serial.println(mySwitch.getReceivedValue());
 			mySwitch.resetAvailable();
 		}
-
-
-		/*For Testing*/
-		//if (rfCodeInput == 1500 || rfCodeInput == 1600)
-		//{
-		//	rfCodeInput = 0;
-		//}
-
-		//if (millis() > 1500 && !goUpexperimentDone)
-		//{
-		//	goUpexperimentDone = true;
-		//	rfCodeInput = 1500;
-		//}
-
-		//if (millis() > 3000 && !goDownexperimentDone)
-		//{
-		//	goDownexperimentDone = true;
-		//	rfCodeInput = 1600;
-		//}
-
-		/*End of Testing*/
-
 
 		if (buttonCoordinator.Update() == true)
 		{
@@ -407,7 +369,6 @@ public:
 
 ShutterSwitch shutterSwitch;
 
-// the setup function runs once when you press reset or power the board
 void setup() {
 
 	int upBtnPin = 5;
@@ -426,7 +387,7 @@ void setup() {
 	shutterSwitch.setup();
 }
 
-// the loop function runs over and over again until power down or reset
+
 void loop() {
 	shutterSwitch.Loop();
 }
