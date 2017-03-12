@@ -228,9 +228,6 @@ public:
 		int _upRelayPinState = _upRelay.getState();
 		int _downRelayPinState = _downRelay.getState();
 
-		upBtnDebouncer.update();
-		downBtnDebouncer.update();
-
 		_upButtonPinState = digitalRead(_upButtonPin);
 		_downButtonPinState = digitalRead(_downButtonPin);
 
