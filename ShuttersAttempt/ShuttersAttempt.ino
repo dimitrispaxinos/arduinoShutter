@@ -357,19 +357,18 @@ ShutterSwitch shutterSwitch;
 
 void setup() {
 
-	int upBtnPin = 5;
-	int downBtnPin = 6;
-	int upRelPin = 12;
-	int downRelPin = 10;
+	int UP_BUTTON = 5;
+	int DOWN_BUTTON = 6;
+	int UP_RELAY = 12;
+	int DOWN_RELAY = 10;
 
-	int _upCCode = 5588308;
-	int _downCCode = 5588309;
-	int _goUpRfDuration = 5000;
-	int _goDownRfDuration = 5000;
+	int UP_RF_CODE = 5588308;
+	int DOWN_RF_CODE = 5588309;
+	int UP_RF_DURATION = 5000;
+	int DOWN_RF_DURATION = 5000;
+	int SWITCHING_DIRECTION_DELAY = 2000;
 
-
-
-	shutterSwitch = ShutterSwitch(upBtnPin, downBtnPin, upRelPin, downRelPin, _upCCode, _downCCode, _goUpRfDuration, _goDownRfDuration, 1200);
+	shutterSwitch = ShutterSwitch(UP_BUTTON, DOWN_BUTTON, UP_RELAY, DOWN_RELAY, UP_RF_CODE, DOWN_RF_CODE, UP_RF_DURATION, DOWN_RF_DURATION, SWITCHING_DIRECTION_DELAY);
 	shutterSwitch.setup();
 }
 
