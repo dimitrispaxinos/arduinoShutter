@@ -4,6 +4,56 @@
  Author:	RevilS
 */
 
+class WirelessAndManualSwitch{
+
+public:
+	WirelessAndManualSwitch() {};
+
+public:
+	WirelessAndManualSwitch(int relay, int manualSwitch, int switchOnRfCode, int switchOffRfCode) {
+		_relay = relay;
+		_switch = manualSwitch;
+		_switchOnRfCode = switchOnRfCode;
+		_switchOffRfCode = switchOffRfCode;
+	};
+
+
+	void setup()	 	{
+		pinMode(_switch, INPUT_PULLUP);
+		pinMode(_relay, OUTPUT);
+	}
+
+	int _relay = 10;
+	int _switch = 12;
+	int _switchOnRfCode = 280100;
+	int _switchOffRfCode = 280200;
+	int relayState;
+	int switchState = HIGH;
+	int lastSwitchState = HIGH;
+
+	void Update(int rfCode)
+	{
+		switchState = digitalRead(_switch);
+		relayState = digitalRead(_relay);
+
+		if (switchState != lastSwitchState)
+		{
+			lastSwitchState = switchState;
+			digitalWrite(_relay, !relayState);
+		}
+
+		if (rfCode == _switchOffRfCode)
+		{
+			digitalWrite(_relay, HIGH);
+		}
+
+		if (rfCode == _switchOnRfCode)
+		{
+			digitalWrite(_relay, LOW);
+		}
+	}  
+};
+
 #include <RCSwitch.h>
 int RELAY = 10;
 int SWITCH = 12;
@@ -18,11 +68,11 @@ int experimentDone = 0;
 
 RCSwitch mySwitch = RCSwitch();
 
+WirelessAndManualSwitch wSwitch = WirelessAndManualSwitch(RELAY, SWITCH, SWITCH_ON_RF_CODE, SWITCH_OFF_RF_CODE);
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	pinMode(SWITCH, INPUT_PULLUP);
-	pinMode(RELAY, OUTPUT);
+	wSwitch.setup();
 
 	Serial.begin(9600);
 	mySwitch.enableReceive(0);  // Receiver on interrupt 0 => that is pin #2	
@@ -32,28 +82,12 @@ void setup() {
 void loop() {
 	rfCodeInput = 0; //activate after adding the RF module
 
-	 if (mySwitch.available()) {
-		 rfCodeInput = mySwitch.getReceivedValue();
-		 Serial.println(mySwitch.getReceivedValue());
-		 mySwitch.resetAvailable();
-	 }
-
-	switchState = digitalRead(SWITCH);
-	relayState = digitalRead(RELAY);
-
-	if (switchState != lastSwitchState)
-	{
-		lastSwitchState = switchState;
-		digitalWrite(RELAY, !relayState);
+	if (mySwitch.available()) {
+		rfCodeInput = mySwitch.getReceivedValue();
+		Serial.println(mySwitch.getReceivedValue());
+		mySwitch.resetAvailable();
 	}
 
-	if (rfCodeInput == SWITCH_OFF_RF_CODE)
-	{
-		digitalWrite(RELAY, HIGH);
-	}
-
-	if (rfCodeInput == SWITCH_ON_RF_CODE)
-	{
-		digitalWrite(RELAY, LOW);
-	}
+	wSwitch.Update(rfCodeInput);	
 }
+
