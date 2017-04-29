@@ -259,7 +259,7 @@ public:
 				{
 					_goUpNextUpdateTime = 0;
 					_upRelay.turnOn();
-				}		
+				}
 			}
 			else if (_downButtonPinState == LOW)
 			{
@@ -310,7 +310,8 @@ public:
 		int downCCode,
 		int goUpRfDuration,
 		int goDownRfDuration,
-		int switchingDuration
+		int switchingDuration,
+		bool useInternalRfReader
 	)
 	{
 		Relay upRelay(upRelayPin);
@@ -319,9 +320,12 @@ public:
 		RfCommand downCommand(downCCode, goDownRfDuration, downRelay);
 		commandCoordinator = CommandCoordinator(upCommand, downCommand, switchingDuration);
 		buttonCoordinator = ButtonCoordinator(upButtonPin, downButtonPin, upRelay, downRelay, switchingDuration);
-		mySwitch = RCSwitch();
-		Serial.begin(9600);
-		mySwitch.enableReceive(0);  // Receiver on interrupt 0 => that is pin #2
+		if (useInternalRfReader)
+		{
+			mySwitch = RCSwitch();
+			Serial.begin(9600);
+			mySwitch.enableReceive(0);  // Receiver on interrupt 0 => that is pin #2
+		}
 	}
 
 	int rfCodeInput = 0;
@@ -331,6 +335,7 @@ public:
 		buttonCoordinator.setup();
 	}
 
+	// Use only if useInternalRfReader = true
 	void Loop()
 	{
 		// Reset every time. If switch is not available, the rfCode stays the same.
@@ -341,6 +346,22 @@ public:
 			//Serial.println(mySwitch.getReceivedValue());
 			mySwitch.resetAvailable();
 		}
+
+		if (buttonCoordinator.Update() == true)
+		{
+			commandCoordinator.resetDuration();
+		}
+		else
+		{
+			commandCoordinator.update(rfCodeInput);
+		}
+	}
+	
+	// Use only if useInternalRfReader = false
+	void Update(int rfCode)
+	{
+		// Reset every time. If switch is not available, the rfCode stays the same.
+		rfCodeInput = rfCode;
 
 		if (buttonCoordinator.Update() == true)
 		{
