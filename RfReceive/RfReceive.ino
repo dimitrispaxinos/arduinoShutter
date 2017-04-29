@@ -18,7 +18,8 @@ void setup() {
 
 void loop() {
 	if (mySwitch.available()) {
-		Serial.println(mySwitch.getReceivedValue());
+		Serial.println(mySwitch.getReceivedValue());  
+		Serial.println(mySwitch.getReceivedBitlength());
 		//output(mySwitch.getReceivedValue(), mySwitch.getReceivedBitlength(), mySwitch.getReceivedDelay(), mySwitch.getReceivedRawdata(), mySwitch.getReceivedProtocol());
 		mySwitch.resetAvailable();
 	}

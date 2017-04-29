@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="RfTransmit.ino" />
+    <None Include="WirelessAndManualLightSwitch.ino" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="__vm\.RfTransmit.vsarduino.h">
+    <ClInclude Include="__vm\.WirelessAndManualLightSwitch.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
